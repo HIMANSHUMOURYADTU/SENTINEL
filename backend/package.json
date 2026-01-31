@@ -1,0 +1,30 @@
+{
+  "name": "voice-sentinel-backend",
+  "version": "1.0.0",
+  "description": "AI-powered voice fraud detection system with 4-agent architecture",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "echo \"No tests configured yet\""
+  },
+  "keywords": [
+    "voice",
+    "fraud",
+    "detection",
+    "ai",
+    "security"
+  ],
+  "author": "VoiceSentinel",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {}
+}
