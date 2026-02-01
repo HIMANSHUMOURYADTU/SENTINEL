@@ -441,36 +441,16 @@ class RealTimeRiskMonitor {
 // =============================================================================
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
-// Middleware - CORS with credentials support
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow all origins for now (development) or whitelist in production
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:8080',
-      'http://localhost:8081',
-      'http://localhost:8082',
-      'http://localhost:8083',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:8082',
-    ];
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow any origin in development
-    }
-  },
+// Middleware - CORS with credentials support (EC2 compatible)
+app.use(cors({
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  exposedHeaders: ['Set-Cookie'],
-};
-
-app.use(cors(corsOptions));
+  exposedHeaders: ['Set-Cookie']
+}));
 
 // Middleware - JSON parser
 app.use(express.json());

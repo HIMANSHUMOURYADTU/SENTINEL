@@ -34,7 +34,7 @@
 | **Full Stack Engineer** | Kanishka Grag | |
 | **Product Manager** | Soumya Garg | |
 
-**Organization:** [Mewotech](https://mewotech.com)  
+**Organization:** [Meowtech](https://meowtech.com)  
 **Project:** SENTINEL Voice Fraud Detection  
 **Founded:** 2026  
 
@@ -420,7 +420,7 @@ MIT License - See LICENSE file for details
 - **Kanishka Grag** - Full Stack Development, Frontend Implementation
 - **Soumya Garg** - Product Management, UI/UX Design, Quality Assurance
 
-**Organization:** Mewotech  
+**Organization:** Meowtech  
 **Project Duration:** January 2026 - February 2026  
 **Technology Partner:** OpenAI, Firebase, AWS  
 
@@ -429,8 +429,8 @@ MIT License - See LICENSE file for details
 ## 📞 Contact & Support
 
 **Project Repository:** [GitHub - SENTINEL](https://github.com/HIMANSHUMOURYADTU/SENTINEL)  
-**Organization:** [Mewotech](https://mewotech.com)  
-**Email:** support@mewotech.com  
+**Organization:** [Meowtech](https://meowtech.com)  
+**Email:** support@meowtech.com  
 
 ---
 
@@ -461,7 +461,7 @@ MIT License - See LICENSE file for details
 
 <div align="center">
 
-### 🌟 Built with ❤️ by the Mewotech Team
+### 🌟 Built with ❤️ by the Meowtech Team
 
 **SENTINEL - Protecting Voice Authentication in Real-Time**
 
