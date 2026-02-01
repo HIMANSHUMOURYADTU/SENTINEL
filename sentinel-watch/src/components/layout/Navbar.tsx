@@ -11,7 +11,21 @@ export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, role: userRole, logout, loading } = useAuth();
+  
+  let user, userRole, logout, loading;
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    userRole = auth.role;
+    logout = auth.logout;
+    loading = auth.loading;
+  } catch (err) {
+    console.warn('[Navbar] Auth context unavailable, using fallback', err);
+    user = null;
+    userRole = 'guest';
+    logout = async () => {};
+    loading = false;
+  }
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);

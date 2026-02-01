@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import AgentDashboard from "./pages/AgentDashboard";
 import Calls from "./pages/Calls";
 import Admin from "./pages/Admin";
+import LiveStream from "./pages/LiveStream";
 import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "@/auth/AuthContext";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<AgentDashboard />} />
             <Route path="/calls" element={<Calls />} />
+            <Route path="/live-stream" element={<LiveStream />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

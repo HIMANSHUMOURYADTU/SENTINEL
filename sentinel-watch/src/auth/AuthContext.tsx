@@ -44,49 +44,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
      FIREBASE SESSION LISTENER
   ======================= */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setRole("agent");
+    try {
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!firebaseUser) {
+          setUser(null);
+          setRole("agent");
+          setLoading(false);
+          return;
+        }
+
+        const token = await firebaseUser.getIdToken();
+        localStorage.setItem("token", token);
+
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          name: firebaseUser.displayName,
+          photo: firebaseUser.photoURL,
+        });
+
+        // TEMP role (backend will later override this)
+        setRole(
+          localStorage.getItem("voicesentinel_selected_role") ?? "agent"
+        );
+
+        // CHECK BACKEND AUTH STATUS (important: include cookies)
+        try {
+          const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
+          const resp = await fetch(`${API_URL}/auth/status`, {
+            credentials: 'include'
+          });
+          const data = await resp.json();
+          if (data?.authenticated) {
+            console.log('Backend user:', data.user);
+            // backend may provide additional role info
+            if (data.user?.role) setRole(data.user.role);
+          }
+        } catch (err) {
+          console.warn('Backend auth check failed', err);
+        }
+
         setLoading(false);
-        return;
-      }
-
-      const token = await firebaseUser.getIdToken();
-      localStorage.setItem("token", token);
-
-      setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        name: firebaseUser.displayName,
-        photo: firebaseUser.photoURL,
       });
 
-      // TEMP role (backend will later override this)
-      setRole(
-        localStorage.getItem("voicesentinel_selected_role") ?? "agent"
-      );
-
-      // CHECK BACKEND AUTH STATUS (important: include cookies)
-      try {
-        const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
-        const resp = await fetch(`${API_URL}/auth/status`, {
-          credentials: 'include'
-        });
-        const data = await resp.json();
-        if (data?.authenticated) {
-          console.log('Backend user:', data.user);
-          // backend may provide additional role info
-          if (data.user?.role) setRole(data.user.role);
-        }
-      } catch (err) {
-        console.warn('Backend auth check failed', err);
-      }
-
+      return () => unsubscribe();
+    } catch (err) {
+      // Firebase not configured, skip auth
+      console.warn('Firebase initialization failed - proceeding without auth', err);
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
 
   /* =======================
