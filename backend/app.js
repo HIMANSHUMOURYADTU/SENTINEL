@@ -12,12 +12,18 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import http from 'http';
+import { WebSocketServer } from 'ws';
+import VoiceAnalysisEngine from './voiceEngine.js';
 
 // Load environment variables
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Initialize Voice Analysis Engine
+const voiceEngine = new VoiceAnalysisEngine();
 
 // =============================================================================
 // PART 1: CORE AI AGENTS (THE LOGIC)
@@ -661,14 +667,193 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ============================================================================
+// VOICE ANALYSIS ENDPOINTS (NODE.JS ENGINE)
+// ============================================================================
+
 /**
- * Start Server
+ * Analyze audio using Node.js voice engine
  */
-app.listen(PORT, () => {
+app.post('/api/voice/analyze', upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file provided' });
+    }
+
+    // Analyze with Node.js engine
+    const analysis = voiceEngine.processAudio(req.file.buffer);
+
+    if (!analysis) {
+      return res.status(400).json({ error: 'Failed to process audio' });
+    }
+
+    // Combine with Node agents
+    const riskEngine = new VoiceSentinelRiskEngine();
+    const riskScore = riskEngine.calculateScore(analysis);
+    const challengeGen = new ChallengeGenerator();
+    const challenge = challengeGen.generate(riskScore);
+
+    res.json({
+      success: true,
+      data: {
+        callId: uuidv4(),
+        timestamp: new Date(),
+        analysis: analysis,
+        riskScore: riskScore,
+        challenge: challenge,
+        recommendation: analysis.recommendation,
+        audioMetadata: {
+          filename: req.file.originalname,
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Voice analysis error:', error.message);
+    res.status(500).json({
+      error: 'Voice analysis failed',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * Batch audio analysis
+ */
+app.post('/api/voice/batch', upload.array('audios', 10), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No audio files provided' });
+    }
+
+    const results = [];
+
+    for (const file of req.files) {
+      try {
+        const analysis = voiceEngine.processAudio(file.buffer);
+
+        if (analysis) {
+          const riskEngine = new VoiceSentinelRiskEngine();
+          const riskScore = riskEngine.calculateScore(analysis);
+
+          results.push({
+            filename: file.originalname,
+            success: true,
+            analysis: {
+              riskScore,
+              recommendation: analysis.recommendation,
+              quality: analysis.quality
+            }
+          });
+        }
+      } catch (err) {
+        results.push({
+          filename: file.originalname,
+          success: false,
+          error: err.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      totalFiles: req.files.length,
+      processedFiles: results.filter(r => r.success).length,
+      results
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Batch analysis failed',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * Create live stream session
+ */
+app.get('/api/voice/stream/session', (req, res) => {
+  const sessionId = uuidv4();
+  res.json({
+    success: true,
+    sessionId,
+    message: 'Stream session created. Connect via WebSocket.'
+  });
+});
+
+/**
+ * Start Server with WebSocket
+ */
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+/**
+ * WebSocket handler for live streaming
+ */
+wss.on('connection', (ws) => {
+  const sessionId = uuidv4();
+  console.log(`[WebSocket] New session: ${sessionId}`);
+
+  ws.send(JSON.stringify({
+    type: 'connected',
+    sessionId,
+    message: 'Connected to live stream analyzer'
+  }));
+
+  ws.on('message', async (data) => {
+    try {
+      const message = JSON.parse(data.toString());
+
+      if (message.type === 'audio_chunk') {
+        // Decode base64 audio
+        const audioBuffer = Buffer.from(message.data, 'base64');
+
+        // Analyze chunk
+        const analysis = voiceEngine.processAudio(audioBuffer);
+
+        if (analysis) {
+          const riskEngine = new VoiceSentinelRiskEngine();
+          const riskScore = riskEngine.calculateScore(analysis);
+
+          // Send analysis back
+          ws.send(JSON.stringify({
+            type: 'analysis_result',
+            sessionId,
+            analysis: {
+              ...analysis,
+              riskScore: riskScore
+            },
+            timestamp: new Date().toISOString()
+          }));
+        }
+      } else if (message.type === 'end_stream') {
+        ws.send(JSON.stringify({
+          type: 'stream_complete',
+          sessionId,
+          message: 'Stream analysis complete'
+        }));
+      }
+    } catch (error) {
+      console.error('WebSocket error:', error.message);
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: error.message
+      }));
+    }
+  });
+
+  ws.on('close', () => {
+    console.log(`[WebSocket] Session closed: ${sessionId}`);
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`\n✓ VoiceSentinel Backend running on http://0.0.0.0:${PORT}`);
-  console.log(`  - API Docs: http://localhost:${PORT}`);
+  console.log(`  - API: http://localhost:${PORT}/api/voice/analyze`);
   console.log(`  - Health: http://localhost:${PORT}/health`);
-  console.log(`  - Analysis: POST http://localhost:${PORT}/analyze\n`);
+  console.log(`  - WebSocket: ws://localhost:${PORT}`);
+  console.log(`  - Batch: POST http://localhost:${PORT}/api/voice/batch\n`);
 });
 
 export default app;
