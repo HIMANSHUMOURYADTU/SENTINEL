@@ -31,7 +31,7 @@
 | Role | Name | GitHub |
 |------|------|--------|
 | **Lead Developer** | Himanshu Mourya | [@HIMANSHUMOURYADTU](https://github.com/HIMANSHUMOURYADTU) |
-| **Full Stack Engineer** | Kanishka Grag | |
+| **Full Stack Engineer** | Kanishka Garg | |
 | **Product Manager** | Soumya Garg | |
 
 **Organization:** [Meowtech](https://meowtech.com)  
