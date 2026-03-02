@@ -463,22 +463,8 @@ const upload = multer({
   }
 });
 
-// Middleware - Serve frontend static files
+// Frontend path for static file serving
 const frontendPath = path.join(__dirname, '../sentinel-watch/dist');
-app.use(express.static(frontendPath));
-
-// SPA fallback - route all non-API requests to index.html
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.startsWith('/ws')) {
-    const indexPath = path.join(frontendPath, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    }
-  }
-}, (err, req, res, next) => {
-  // Continue to API routes if there's an error
-  next();
-});
 
 // Initialize Logic Singletons
 console.log('\n--- STARTING VOICE SENTINEL ENGINES ---');
@@ -1199,6 +1185,26 @@ wss.on('connection', (ws) => {
     const duration = Math.round((new Date() - sessionStartTime) / 1000);
     console.log(`[WebSocket] Session closed: ${sessionId} (${analysisCount} analyses, ${duration}s)`);
   });
+});
+
+/**
+ * Serve Frontend Static Files & SPA Fallback
+ * Must be AFTER all API routes to avoid conflicts
+ */
+app.use(express.static(frontendPath));
+
+// SPA fallback - route all non-API requests to index.html
+app.get('*', (req, res) => {
+  const indexPath = path.join(frontendPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({
+      error: 'Frontend not found',
+      message: 'Make sure to build the frontend: npm run build in sentinel-watch/',
+      path: frontendPath
+    });
+  }
 });
 
 server.listen(PORT, () => {
