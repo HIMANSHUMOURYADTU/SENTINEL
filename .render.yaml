@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: voice-sentinel
+    runtime: node
+    startCommand: cd backend && npm start
+    buildCommand: npm --prefix backend install
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

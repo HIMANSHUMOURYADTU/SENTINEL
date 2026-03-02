@@ -463,6 +463,23 @@ const upload = multer({
   }
 });
 
+// Middleware - Serve frontend static files
+const frontendPath = path.join(__dirname, '../sentinel-watch/dist');
+app.use(express.static(frontendPath));
+
+// SPA fallback - route all non-API requests to index.html
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/ws')) {
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    }
+  }
+}, (err, req, res, next) => {
+  // Continue to API routes if there's an error
+  next();
+});
+
 // Initialize Logic Singletons
 console.log('\n--- STARTING VOICE SENTINEL ENGINES ---');
 const audioProcessor = new AudioProcessor();
