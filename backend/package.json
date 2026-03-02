@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
-    "build": "cd ../sentinel-watch && npm ci && npx vite build",
+    "build": "cd ../sentinel-watch && NODE_ENV=development npm ci && npx vite build",
     "postinstall": "npm run build",
     "test": "echo \"No tests configured yet\""
   },
