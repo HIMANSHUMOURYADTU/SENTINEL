@@ -677,40 +677,6 @@ app.get('/stats', (req, res) => {
 });
 
 /**
- * ROOT ENDPOINT - API Documentation
- */
-app.get('/', (req, res) => {
-  res.json({
-    name: 'VoiceSentinel Backend',
-    version: '1.0.0',
-    description: 'AI-powered voice fraud detection system with 4-agent architecture',
-    endpoints: {
-      'GET /health': 'Health check',
-      'POST /analyze': 'Analyze single audio file',
-      'POST /analyze-batch': 'Analyze multiple audio files',
-      'GET /stats': 'Get risk statistics',
-      'GET /docs': 'API documentation (this endpoint)'
-    },
-    documentation: {
-      analyze: {
-        method: 'POST',
-        path: '/analyze',
-        description: 'Upload audio file for fraud detection analysis',
-        request: {
-          content_type: 'multipart/form-data',
-          body: 'file (audio file)'
-        },
-        response: {
-          risk_score: '0-100',
-          verdict: 'FAST_LANE | COGNITIVE_TEST | BLOCK_IMMEDIATE',
-          transcript: 'Transcribed text'
-        }
-      }
-    }
-  });
-});
-
-/**
  * Error handling middleware
  */
 app.use((err, req, res, next) => {
